@@ -54,10 +54,11 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\Block.cs" />
-     <Compile Include="Assets\Scripts\Counter.cs" />
+     <Compile Include="Assets\Scripts\Controller.cs" />
      <Compile Include="Assets\Scripts\GameManager.cs" />
      <Compile Include="Assets\Scripts\Tile.cs" />
      <Compile Include="Assets\Scripts\TileManager.cs" />
+     <Compile Include="Assets\Scripts\UIManager.cs" />
      <None Include="Assets\Shader\SpriteGradient.shader" />
  <Reference Include="UnityEditor.StandardEvents">
  <HintPath>D:/Projects/Games/ReTris/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
