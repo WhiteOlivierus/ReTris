@@ -16,7 +16,7 @@ public class GameManager : MonoBehaviour {
 
     private List<int> properties = new List<int> ();
     private List<KeyCode> playersInput = new List<KeyCode> ();
-    private List<Controller> playerControllers = new List<Controller> ();
+    private List<GameObject> playerControllers = new List<GameObject> ();
 
 
     void Awake () {
@@ -26,10 +26,8 @@ public class GameManager : MonoBehaviour {
 
     public void StartGame () {
         GetInitData ();
-        CreatePlayers ();
-        print ("properties: " + properties);
-        print ("properties: " + playersInput);
         SceneManager.LoadScene (1);
+        CreatePlayers ();
     }
 
 
@@ -55,12 +53,12 @@ public class GameManager : MonoBehaviour {
 
 
     private void CreatePlayers () {
-        for (int i = 0; i < properties [0]; i++) {
-
-            List<KeyCode> t = playersInput.GetRange (i, i + 3);
-
-            playerControllers.Add (new Controller (t [0], t [1], t [2], t [3]));
-
+        for (int i = 0; i < properties [0] * 4; i += 4) {
+            List<KeyCode> t = playersInput.GetRange (i, i + 4);
+            GameObject c = new GameObject ("Controller");
+            c.AddComponent<Controller> ();
+            c.GetComponent<Controller> ().SetKeys (t.ToArray ());
+            playerControllers.Add (c);
         }
     }
 
