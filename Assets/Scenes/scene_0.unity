@@ -285,6 +285,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fieldWidth: 10
   fieldHeight: 20
+  timePerMove: 1
 --- !u!4 &1878120641
 Transform:
   m_ObjectHideFlags: 0
