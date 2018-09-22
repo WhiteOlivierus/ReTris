@@ -12,6 +12,6 @@ public class Controller : MonoBehaviour {
 		keyLeft = l;
 		keyRight = r;
 		keyDown = d;
-		keyRight = t;
+		keyRotate = t;
 	}
 }
