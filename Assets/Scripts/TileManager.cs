@@ -76,17 +76,20 @@ public class TileManager : MonoBehaviour {
         {
             CheckDownPlayerTile(playerTile);
         }
+        else if (Input.GetKeyDown(player1.keyRotate))
+        {
+            RotateTile(playerTile);
+        }
 	}
 
     private void AddTile()
     {
-        Tile tempTile = new Tile(3, 2, 4);
+        Tile tempTile = new Tile(3, 3, 4);
         tiles.Add(tempTile);
         for (int i = 0; i < tempTile.TileWidth * tempTile.TileHeight; i++)
         {
             if (tempTile.Blocks[i] != null)
             {
-                Debug.Log(i);
                 int tempTileSize = i;
                 int tempPosition = 0;
                 while(tempTileSize >= tempTile.TileWidth)
@@ -111,7 +114,6 @@ public class TileManager : MonoBehaviour {
                 cubePosX = cubeIndexPos;
 
 
-
                 GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cube.name = "Cube nr. " + i.ToString();
                 cube.transform.position = new Vector3(cubePosX, -cubePosY, 0);
@@ -120,15 +122,83 @@ public class TileManager : MonoBehaviour {
             }
         }
 
-        for (int i = 0; i < blocks.Length; i++)
+        playerTile = tempTile;
+    }
+
+    private void RotateTile(Tile t)
+    {
+        bool clearRotate = true;
+
+        if(clearRotate)
         {
-            if (blocks[i] != null)
+            Block[] tempBlocksArray = (Block[])blocks.Clone();
+            Block[] tempBlocksArraySmall = (Block[])t.Blocks.Clone();
+
+            for (int i = 0; i < t.Blocks.Length; i++)
             {
-                Debug.Log(i + ": " + blocks[i].TileID);
+                if (t.Blocks[i] != null) {
+                    int index = System.Array.IndexOf(blocks, t.Blocks[i]);
+                    if (i == 0)
+                    {
+                        tempBlocksArray[index + 2] = blocks[i];
+                        tempBlocksArraySmall[i + 2] = t.Blocks[i];
+                        t.Blocks[i].GO.transform.Translate(2, 0, 0);
+                    }
+                    else if (i == 1)
+                    {
+                        tempBlocksArray[index + fieldWidth + 1] = blocks[i];
+                        tempBlocksArraySmall[i + t.TileWidth + 1] = t.Blocks[i];
+                        t.Blocks[i].GO.transform.Translate(1, -1, 0);
+                    }
+                    else if (i == 2)
+                    {
+                        tempBlocksArray[index + fieldWidth * 2] = blocks[i];
+                        tempBlocksArraySmall[i + t.TileWidth * 2] = t.Blocks[i];
+                        t.Blocks[i].GO.transform.Translate(0, -2, 0);
+                    }
+                    else if (i == 3)
+                    {
+                        tempBlocksArray[index - fieldWidth + 1] = blocks[i];
+                        tempBlocksArraySmall[i - t.TileWidth + 1] = t.Blocks[i];
+                        t.Blocks[i].GO.transform.Translate(1, 1, 0);
+                    }
+                    else if (i == 5)
+                    {
+                        tempBlocksArray[index + fieldWidth - 1] = blocks[i];
+                        tempBlocksArraySmall[i + t.TileWidth - 1] = t.Blocks[i];
+                        t.Blocks[i].GO.transform.Translate(-1, -1, 0);
+                    }
+                    else if (i == 6)
+                    {
+                        tempBlocksArray[index - fieldWidth * 2] = blocks[i];
+                        tempBlocksArraySmall[i - t.TileWidth * 2] = t.Blocks[i];
+                        t.Blocks[i].GO.transform.Translate(0, 2, 0);
+                    }
+                    else if (i == 7)
+                    {
+                        tempBlocksArray[index - fieldWidth - 1] = blocks[i];
+                        tempBlocksArraySmall[i - t.TileWidth - 1] = t.Blocks[i];
+                        t.Blocks[i].GO.transform.Translate(-1, 1, 0);
+                    }
+                    else if (i == 8)
+                    {
+                        tempBlocksArray[index - 2] = blocks[i];
+                        tempBlocksArraySmall[i - 2] = t.Blocks[i];
+                        t.Blocks[i].GO.transform.Translate(-2, 0, 0);
+                    }
+                }
+            }
+
+            for (int i = 0; i < blocks.Length; i++)
+            {
+                blocks[i] = tempBlocksArray[i];
+            }
+
+            for (int i = 0; i < t.Blocks.Length; i++)
+            {
+                t.Blocks[i] = tempBlocksArraySmall[i];
             }
         }
-
-        playerTile = tempTile;
     }
 
     private void MoveTileLeft(Tile t)
@@ -137,24 +207,31 @@ public class TileManager : MonoBehaviour {
 
         foreach (Block b in t.Blocks)
         {
-            int index = System.Array.IndexOf(blocks, b);
-            if (index - 1 >= 0 && index - 1 % fieldWidth != fieldWidth - 1 % fieldWidth)
+            if (b != null)
             {
-                if (blocks[index - 1] != null)
+                int index = System.Array.IndexOf(blocks, b);
+                Debug.Log(index);
+                if (index - 1 >= 0 && (index - 1 % fieldWidth) != (fieldWidth - 1 % fieldWidth))
                 {
-                    if (blocks[index - 1].TileID != t.ID)
+                    if (blocks[index - 1] != null)
                     {
-                        clearLeft = false;
-                        break;
+                        if (blocks[index - 1].TileID != t.ID)
+                        {
+                            clearLeft = false;
+                            break;
+                        }
                     }
                 }
-            }
-            else
-            {
-                clearLeft = false;
-                break;
+                else
+                {
+                    Debug.Log("First statement is false");
+                    clearLeft = false;
+                    break;
+                }
             }
         }
+
+        Debug.Log(clearLeft);
 
         if(clearLeft)
         {
@@ -179,7 +256,10 @@ public class TileManager : MonoBehaviour {
                 }
             }
 
-            blocks = tempBlocksArray;
+            for (int i = 0; i < blocks.Length; i++)
+            {
+                blocks[i] = tempBlocksArray[i];
+            }
         }
     }
 
@@ -189,22 +269,25 @@ public class TileManager : MonoBehaviour {
 
         foreach (Block b in t.Blocks)
         {
-            int index = System.Array.IndexOf(blocks, b);
-            if (index + 1 < fieldWidth * fieldHeight && index + 1 % fieldWidth != fieldWidth + 1 % fieldWidth)
+            if (b != null)
             {
-                if (blocks[index + 1] != null)
+                int index = System.Array.IndexOf(blocks, b);
+                if (index + 1 < fieldWidth * fieldHeight && index + 1 % fieldWidth != fieldWidth + 1 % fieldWidth)
                 {
-                    if (blocks[index + 1].TileID != t.ID)
+                    if (blocks[index + 1] != null)
                     {
-                        clearRight = false;
-                        break;
+                        if (blocks[index + 1].TileID != t.ID)
+                        {
+                            clearRight = false;
+                            break;
+                        }
                     }
                 }
-            }
-            else
-            {
-                clearRight = false;
-                break;
+                else
+                {
+                    clearRight = false;
+                    break;
+                }
             }
         }
 
@@ -231,7 +314,10 @@ public class TileManager : MonoBehaviour {
                 }
             }
 
-            blocks = tempBlocksArray;
+            for (int i = 0; i < blocks.Length; i++)
+            {
+                blocks[i] = tempBlocksArray[i];
+            }
         }
     }
 
@@ -277,22 +363,25 @@ public class TileManager : MonoBehaviour {
 
         foreach (Block b in t.Blocks)
         {
-            int index = System.Array.IndexOf(blocks, b);
-            if (index + fieldWidth < fieldWidth * fieldHeight)
+            if (b != null)
             {
-                if (blocks[index + fieldWidth] != null)
+                int index = System.Array.IndexOf(blocks, b);
+                if (index + fieldWidth < fieldWidth * fieldHeight)
                 {
-                    if (blocks[index + fieldWidth].TileID != t.ID)
+                    if (blocks[index + fieldWidth] != null)
                     {
-                        clearDown = false;
-                        break;
+                        if (blocks[index + fieldWidth].TileID != t.ID)
+                        {
+                            clearDown = false;
+                            break;
+                        }
                     }
                 }
-            }
-            else
-            {
-                clearDown = false;
-                break;
+                else
+                {
+                    clearDown = false;
+                    break;
+                }
             }
         }
 
@@ -335,13 +424,5 @@ public class TileManager : MonoBehaviour {
         }
 
         blocks = tempBlocksArray;
-
-        for (int i = 0; i < blocks.Length; i++)
-        {
-            if(blocks[i] != null)
-            {
-                Debug.Log(i + ": " + blocks[i].TileID);
-            }
-        }
     }
 }
