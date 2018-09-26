@@ -138,54 +138,13 @@ public class TileManager : MonoBehaviour {
             {
                 if (t.Blocks[i] != null) {
                     int index = System.Array.IndexOf(blocks, t.Blocks[i]);
-                    if (i == 0)
-                    {
-                        tempBlocksArray[index + 2] = blocks[i];
-                        tempBlocksArraySmall[i + 2] = t.Blocks[i];
-                        t.Blocks[i].GO.transform.Translate(2, 0, 0);
-                    }
-                    else if (i == 1)
-                    {
-                        tempBlocksArray[index + fieldWidth + 1] = blocks[i];
-                        tempBlocksArraySmall[i + t.TileWidth + 1] = t.Blocks[i];
-                        t.Blocks[i].GO.transform.Translate(1, -1, 0);
-                    }
-                    else if (i == 2)
-                    {
-                        tempBlocksArray[index + fieldWidth * 2] = blocks[i];
-                        tempBlocksArraySmall[i + t.TileWidth * 2] = t.Blocks[i];
-                        t.Blocks[i].GO.transform.Translate(0, -2, 0);
-                    }
-                    else if (i == 3)
-                    {
-                        tempBlocksArray[index - fieldWidth + 1] = blocks[i];
-                        tempBlocksArraySmall[i - t.TileWidth + 1] = t.Blocks[i];
-                        t.Blocks[i].GO.transform.Translate(1, 1, 0);
-                    }
-                    else if (i == 5)
-                    {
-                        tempBlocksArray[index + fieldWidth - 1] = blocks[i];
-                        tempBlocksArraySmall[i + t.TileWidth - 1] = t.Blocks[i];
-                        t.Blocks[i].GO.transform.Translate(-1, -1, 0);
-                    }
-                    else if (i == 6)
-                    {
-                        tempBlocksArray[index - fieldWidth * 2] = blocks[i];
-                        tempBlocksArraySmall[i - t.TileWidth * 2] = t.Blocks[i];
-                        t.Blocks[i].GO.transform.Translate(0, 2, 0);
-                    }
-                    else if (i == 7)
-                    {
-                        tempBlocksArray[index - fieldWidth - 1] = blocks[i];
-                        tempBlocksArraySmall[i - t.TileWidth - 1] = t.Blocks[i];
-                        t.Blocks[i].GO.transform.Translate(-1, 1, 0);
-                    }
-                    else if (i == 8)
-                    {
-                        tempBlocksArray[index - 2] = blocks[i];
-                        tempBlocksArraySmall[i - 2] = t.Blocks[i];
-                        t.Blocks[i].GO.transform.Translate(-2, 0, 0);
-                    }
+                    int[] nrs = { index + 2, index + fieldWidth + 1, index + fieldWidth * 2, index - fieldWidth + 1, index, index + fieldWidth - 1, index - fieldWidth * 2, index - fieldWidth - 1, index - 2};
+                    int[] nrs2 = { i + 2, i + t.TileWidth + 1, i + t.TileWidth * 2, i - t.TileWidth + 1, i, i + t.TileWidth - 1, i - t.TileWidth * 2, i - t.TileWidth - 1, i - 2};
+                    Vector3[] nrs3 = { new Vector3(2, 0, 0), new Vector3(1, -1, 0), new Vector3(0, -2, 0), new Vector3(1, 1, 0), new Vector3(0, 0, 0), new Vector3(-1, -1, 0), new Vector3(0, 2, 0), new Vector3(-1, 1, 0), new Vector3(-2, 0, 0) };
+
+                    tempBlocksArray[nrs[i]] = blocks[i];
+                    tempBlocksArraySmall[nrs2[i]] = t.Blocks[i];
+                    t.Blocks[i].GO.transform.Translate(nrs3[i]);
                 }
             }
 
@@ -396,9 +355,7 @@ public class TileManager : MonoBehaviour {
 
     private void MoveDownInOrder(List<Tile> tilesToMoveDown)
     {
-        Block[] tempBlocksArray = new Block[fieldWidth * fieldHeight];
-
-        tempBlocksArray = (Block[])blocks.Clone();
+        Block[] tempBlocksArray = (Block[])blocks.Clone();
 
         foreach (Tile t in tilesToMoveDown)
         {
