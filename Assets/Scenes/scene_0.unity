@@ -284,7 +284,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fieldWidth: 10
-  fieldHeight: 20
+  fieldHeight: 15
+  prefabBlock: {fileID: 1761303888139358, guid: ac7f154ab0613e04a8e20f56d601228c,
+    type: 2}
   timePerMove: 1
 --- !u!4 &1878120641
 Transform:
