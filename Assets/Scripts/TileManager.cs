@@ -10,9 +10,12 @@ public class TileManager : MonoBehaviour {
     [SerializeField]
     private int fieldHeight;
 
+    private int startingPoint;
+
     Tile playerTile;
 
     public GameObject prefabBlock;
+    public GameObject prefabBlockBorder;
 
     public float timePerMove;
 
@@ -38,19 +41,30 @@ public class TileManager : MonoBehaviour {
         blocks = new Block [fieldWidth * fieldHeight];
         timePassed = 0f;
         player1 = new Controller (KeyCode.A, KeyCode.D, KeyCode.S, KeyCode.W);
+
+        startingPoint = fieldWidth / 2;
+
+        AddBorder();
+        AddTile(CreateTile());
     }
 
     // Update is called once per frame
     void FixedUpdate () {
         if (Input.GetKeyDown (KeyCode.G)) {
-            AddTile ();
+            AddTile(CreateTile());
         }
 
         if (playerTile != null) {
             timePassed += Time.deltaTime;
             if (timePassed >= timePerMove) {
                 if (!CheckDownPlayerTile (playerTile)) {
-                    AddTile ();
+                    
+                    while(CheckForRows())
+                    {
+                        Debug.Log("Row has been cleared");
+                    }
+                    
+                    AddTile(CreateTile());
                 }
                 timePassed = 0f;
             }
@@ -60,27 +74,131 @@ public class TileManager : MonoBehaviour {
             MoveTileLeft (playerTile);
         } else if (Input.GetKeyDown (player1.keyRight)) {
             MoveTileRight (playerTile);
-        } else if (Input.GetKeyDown (player1.keyDown)) {
+        } else if (Input.GetKey (player1.keyDown)) {
             CheckDownPlayerTile (playerTile);
         } else if (Input.GetKeyDown (player1.keyRotate)) {
             RotateTile (playerTile);
         }
     }
 
-    private void AddTile () {
+    private void AddBorder() {
+        for (int i = 0; i < fieldWidth; i++)
+        {
+            Instantiate(prefabBlockBorder, new Vector3(i, 1, 0), Quaternion.identity);
+            Instantiate(prefabBlockBorder, new Vector3(i, -fieldHeight, 0), Quaternion.identity);
+        }
+
+        for (int i = 0; i < fieldHeight; i++)
+        {
+            Instantiate(prefabBlockBorder, new Vector3(-1, -i, 0), Quaternion.identity);
+            Instantiate(prefabBlockBorder, new Vector3(fieldWidth, -i, 0), Quaternion.identity);
+        }
+    }
+
+    private bool CheckForRows()
+    {
+        bool rowCleared = false;
+
+        for (int i = 0; i < fieldHeight; i++)
+        {
+            bool fullRow = true;
+
+            for (int j = 0; j < fieldWidth; j++)
+            {
+                if(blocks[fieldWidth * i + j] == null)
+                {
+                    fullRow = false;
+                    break;
+                }
+            }
+
+            if(fullRow)
+            {
+                ClearRow(i);
+                rowCleared = true;
+            }
+        }
+
+        return rowCleared;
+    }
+
+    private void ClearRow(int rowIndex)
+    {
+        for (int i = 0; i < fieldWidth; i++)
+        {
+            foreach (Tile t in tiles)
+            {
+                if(blocks[rowIndex * fieldWidth + i].TileID == t.ID)
+                {
+                    int index = System.Array.IndexOf(t.Blocks, blocks[rowIndex * fieldWidth + i]);
+                    t.Blocks[index] = null;
+                }
+            }
+
+            Destroy(blocks[rowIndex * fieldWidth + i].GO);
+            blocks[rowIndex * fieldWidth + i] = null;
+        }
+
+        for (int i = rowIndex * fieldWidth - 1; i >= 0; i--)
+        {
+            if(blocks[i] != null) {
+                blocks[i].GO.transform.Translate(0, -1, 0);
+                blocks[i + fieldWidth] = blocks[i];
+                blocks[i] = null;
+            }
+        }
+    }
+
+    private bool CheckGameOver(int index) {
+        if(blocks[index] != null) {
+            return true;
+        }
+        return false;
+    }
+
+    private void GameOver() {
+        ResetGame();
+    }
+
+    private void ResetGame() {
+        for (int i = 0; i < blocks.Length; i++)
+        {
+            if(blocks[i] != null) {
+                Destroy(blocks[i].GO);
+                blocks[i] = null;
+            }
+        }
+
+        tiles.Clear();
+        timePassed = 0f;
+
+        AddTile(CreateTile());
+    }
+
+    private Tile CreateTile() {
         Tile tempTile = new Tile (3, 3, 4);
-        tiles.Add (tempTile);
-        for (int i = 0; i < tempTile.TileWidth * tempTile.TileHeight; i++) {
-            if (tempTile.Blocks [i] != null) {
+        return tempTile;
+    }
+
+    private void AddTile (Tile t) {
+
+        bool gameOver = false;
+
+        for (int i = 0; i < t.TileWidth * t.TileHeight; i++) {
+            if (t.Blocks [i] != null) {
                 int tempTileSize = i;
                 int tempPosition = 0;
-                while (tempTileSize >= tempTile.TileWidth) {
-                    tempTileSize -= tempTile.TileWidth;
+                while (tempTileSize >= t.TileWidth) {
+                    tempTileSize -= t.TileWidth;
                     tempPosition += fieldWidth;
                 }
-                tempPosition += tempTileSize;
+                tempPosition += tempTileSize += startingPoint - t.TileWidth / 2;
 
-                blocks [tempPosition] = tempTile.Blocks [i];
+                if(CheckGameOver(tempPosition)) {
+                    GameOver();
+                    gameOver = true;
+                    break;
+                }
 
                 int cubeIndexPos = tempPosition;
                 int cubePosX = 0;
@@ -95,18 +213,47 @@ public class TileManager : MonoBehaviour {
 
 
                 GameObject cube = Instantiate (prefabBlock);
-                cube.name = "Cube nr. " + i.ToString ();
                 cube.transform.position = new Vector3 (cubePosX, -cubePosY, 0);
 
-                tempTile.Blocks [i].GO = cube;
+                blocks [tempPosition] = t.Blocks [i];
+                t.Blocks [i].GO = cube;
             }
         }
 
-        playerTile = tempTile;
+        if(!gameOver) {
+            tiles.Add (t);
+
+            playerTile = t;
+        }
     }
 
     private void RotateTile (Tile t) {
         bool clearRotate = true;
+
+        for (int i = 0; i < t.Blocks.Length; i++)
+        {
+            if (t.Blocks[i] != null)
+            {
+
+                int index = System.Array.IndexOf(blocks, t.Blocks[i]);
+                int[] nrs = { index + 2, index + fieldWidth + 1, index + fieldWidth * 2, index - fieldWidth + 1, index, index + fieldWidth - 1, index - fieldWidth * 2, index - fieldWidth - 1, index - 2 };
+                if(nrs[i] < 0 || nrs[i] >= fieldWidth * fieldHeight)
+                {
+                    clearRotate = false;
+                }
+                else if(blocks[nrs[i]] != null)
+                {
+                    if (blocks[nrs[i]].TileID != t.ID)
+                    {
+                        clearRotate = false;
+                    }
+                }
+                else if((nrs[i] > index && nrs[i] % fieldWidth == 0) || (nrs[i] < index && nrs[i] % fieldWidth == fieldWidth - 1 % fieldWidth))
+                {
+                    clearRotate = false;
+                }
+            }
+        }
 
         if (clearRotate) {
             Block [] tempBlocksArray = (Block []) blocks.Clone ();
@@ -118,7 +265,6 @@ public class TileManager : MonoBehaviour {
                         tempBlocksArray [i] = null;
                     }
                 }
-
             }
 
             for (int i = 0; i < tempBlocksArraySmall.Length; i++) {
@@ -239,6 +385,8 @@ public class TileManager : MonoBehaviour {
     private void CheckDown () {
         List<Tile> tempTiles = new List<Tile> ();
 
+        bool[] tilesMoveDown = new bool[tiles.Count];
+
         foreach (Tile t in tiles) {
             bool clearDown = true;
 
@@ -260,7 +408,9 @@ public class TileManager : MonoBehaviour {
             if (clearDown) tempTiles.Add (t);
         }
 
-        MoveDownInOrder (tempTiles);
+        if(tempTiles.Count > 0) {
+            MoveDownInOrder (tempTiles);
+        }
     }
 
     private bool CheckDownPlayerTile (Tile t) {
@@ -300,6 +450,7 @@ public class TileManager : MonoBehaviour {
                         blocks [i + fieldWidth] = blocks [i];
                         blocks [i].GO.transform.Translate (0, -1, 0);
                         blocks [i] = null;
+                        break;
                     }
 
                 }
