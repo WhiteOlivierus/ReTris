@@ -7,8 +7,6 @@ using UnityEngine.UI;
 
 
 public class GameManager : MonoBehaviour {
-
-
     public int points = 0;
     public int playerCount = 1;
     public int fieldHeight = 10;
@@ -17,7 +15,7 @@ public class GameManager : MonoBehaviour {
     private List<int> properties = new List<int> ();
     private List<KeyCode> playersInput = new List<KeyCode> ();
     private List<GameObject> playerControllers = new List<GameObject> ();
-
+    private List<TileManager> tileManagers = new List<TileManager>();
 
     void Awake () {
         DontDestroyOnLoad (gameObject);
@@ -28,6 +26,12 @@ public class GameManager : MonoBehaviour {
         GetInitData ();
         SceneManager.LoadScene (1);
         CreatePlayers ();
+
+        for (int i = 0; i < playerControllers.Count; i++)
+        {
+            GameObject g = new GameObject();
+            tileManagers.Add(new TileManager(fieldHeight, fieldWidth, playerControllers[i].GetComponent<Controller>(), i * 15));
+        }
     }
 
 

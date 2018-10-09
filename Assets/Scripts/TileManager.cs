@@ -10,6 +10,8 @@ public class TileManager : MonoBehaviour {
     [SerializeField]
     private int fieldHeight;
 
+    private int startingPointField;
+
     private int startingPoint;
 
     Tile playerTile;
@@ -23,7 +25,7 @@ public class TileManager : MonoBehaviour {
 
     List<Tile> tiles;
 
-    Controller player1;
+    Controller player;
 
     public int FieldWidth {
         get { return fieldWidth; }
@@ -35,17 +37,23 @@ public class TileManager : MonoBehaviour {
         set { fieldHeight = value; }
     }
 
-    // Use this for initialization
-    void Start () {
-        tiles = new List<Tile> ();
-        blocks = new Block [fieldWidth * fieldHeight];
+    public TileManager(int fw, int fh, Controller controller, int startX)
+    {
+        FieldWidth = fw;
+        FieldHeight = fh;
+
+        startingPointField = startX;
+
+        tiles = new List<Tile>();
+        blocks = new Block[fieldWidth * fieldHeight];
         timePassed = 0f;
-        player1 = new Controller (KeyCode.A, KeyCode.D, KeyCode.S, KeyCode.W);
 
         startingPoint = fieldWidth / 2;
 
         AddBorder();
         AddTile(CreateTile());
+
+        player = controller;
     }
 
     // Update is called once per frame
@@ -70,13 +78,13 @@ public class TileManager : MonoBehaviour {
             }
         }
 
-        if (Input.GetKeyDown (player1.keyLeft)) {
+        if (Input.GetKeyDown (player.keyLeft)) {
             MoveTileLeft (playerTile);
-        } else if (Input.GetKeyDown (player1.keyRight)) {
+        } else if (Input.GetKeyDown (player.keyRight)) {
             MoveTileRight (playerTile);
-        } else if (Input.GetKey (player1.keyDown)) {
+        } else if (Input.GetKey (player.keyDown)) {
             CheckDownPlayerTile (playerTile);
-        } else if (Input.GetKeyDown (player1.keyRotate)) {
+        } else if (Input.GetKeyDown (player.keyRotate)) {
             RotateTile (playerTile);
         }
     }
@@ -84,14 +92,14 @@ public class TileManager : MonoBehaviour {
     private void AddBorder() {
         for (int i = 0; i < fieldWidth; i++)
         {
-            Instantiate(prefabBlockBorder, new Vector3(i, 1, 0), Quaternion.identity);
-            Instantiate(prefabBlockBorder, new Vector3(i, -fieldHeight, 0), Quaternion.identity);
+            Instantiate(prefabBlockBorder, new Vector3(startingPointField + i, 1, 0), Quaternion.identity);
+            Instantiate(prefabBlockBorder, new Vector3(startingPointField + i, -fieldHeight, 0), Quaternion.identity);
         }
 
         for (int i = 0; i < fieldHeight; i++)
         {
-            Instantiate(prefabBlockBorder, new Vector3(-1, -i, 0), Quaternion.identity);
-            Instantiate(prefabBlockBorder, new Vector3(fieldWidth, -i, 0), Quaternion.identity);
+            Instantiate(prefabBlockBorder, new Vector3(startingPointField -1, -i, 0), Quaternion.identity);
+            Instantiate(prefabBlockBorder, new Vector3(startingPointField + fieldWidth, -i, 0), Quaternion.identity);
         }
     }
 
