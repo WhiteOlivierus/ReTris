@@ -75,7 +75,6 @@ public class Tile {
         for (int i = 0; i < amtBlocks - 1; i++)
         {
             int rnd = options[Random.Range(0, options.Count)];
-            Debug.Log(rnd);
             if (blocks[rnd] == null)
             {
                 blocks[rnd] = new Block(id);
