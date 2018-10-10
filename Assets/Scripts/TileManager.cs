@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TileManager : MonoBehaviour {
+public class TileManager {
 
     Block [] blocks;
     [SerializeField]
@@ -21,6 +21,7 @@ public class TileManager : MonoBehaviour {
 
     private float timePassed;
 
+    Queue<Tile> tilesToAdd;
     List<Tile> tiles;
 
     Controller player1;
@@ -44,14 +45,34 @@ public class TileManager : MonoBehaviour {
 
         startingPoint = fieldWidth / 2;
 
+        tilesToAdd = new Queue<Tile>();
+
+        TileGenerator.GetTileGenerator.onTileCreated.AddListener(AddTileToQueue);
+
+        TileGenerator.CreateTile();
+
         AddBorder();
-        AddTile(CreateTile());
+        AddTile(GetTile());
+    }
+
+    private void AddTileToQueue(Tile t)
+    {
+        tilesToAdd.Enqueue(t);
+    }
+
+    private Tile GetTile()
+    {
+        if (tilesToAdd.Count <= 1)
+        {
+            TileGenerator.CreateTile();
+        }
+        return tilesToAdd.Dequeue();        
     }
 
     // Update is called once per frame
     void FixedUpdate () {
         if (Input.GetKeyDown (KeyCode.G)) {
-            AddTile(CreateTile());
+            AddTile(GetTile());
         }
 
         if (playerTile != null) {
@@ -64,7 +85,7 @@ public class TileManager : MonoBehaviour {
                         Debug.Log("Row has been cleared");
                     }
                     
-                    AddTile(CreateTile());
+                    AddTile(GetTile());
                 }
                 timePassed = 0f;
             }
@@ -84,14 +105,18 @@ public class TileManager : MonoBehaviour {
     private void AddBorder() {
         for (int i = 0; i < fieldWidth; i++)
         {
-            Instantiate(prefabBlockBorder, new Vector3(i, 1, 0), Quaternion.identity);
-            Instantiate(prefabBlockBorder, new Vector3(i, -fieldHeight, 0), Quaternion.identity);
+            Block b = new Block(-1);
+            b.SetBlock(-1, prefabBlockBorder, new Vector3(i, 1, 0), Quaternion.identity);
+            Block c = new Block(-1);
+            c.SetBlock(-1, prefabBlockBorder, new Vector3(i, -fieldHeight, 0), Quaternion.identity);
         }
 
         for (int i = 0; i < fieldHeight; i++)
         {
-            Instantiate(prefabBlockBorder, new Vector3(-1, -i, 0), Quaternion.identity);
-            Instantiate(prefabBlockBorder, new Vector3(fieldWidth, -i, 0), Quaternion.identity);
+            Block b = new Block(-1);
+            b.SetBlock(-1, prefabBlockBorder, new Vector3(-1, -i, 0), Quaternion.identity);
+            Block c = new Block(-1);
+            c.SetBlock(-1, prefabBlockBorder, new Vector3(fieldWidth, -i, 0), Quaternion.identity);
         }
     }
 
@@ -135,7 +160,7 @@ public class TileManager : MonoBehaviour {
                 }
             }
 
-            Destroy(blocks[rowIndex * fieldWidth + i].GO);
+            blocks[rowIndex * fieldWidth + i].SelfDestroy();
             blocks[rowIndex * fieldWidth + i] = null;
         }
 
@@ -164,7 +189,7 @@ public class TileManager : MonoBehaviour {
         for (int i = 0; i < blocks.Length; i++)
         {
             if(blocks[i] != null) {
-                Destroy(blocks[i].GO);
+                blocks[i].SelfDestroy();
                 blocks[i] = null;
             }
         }
@@ -172,13 +197,14 @@ public class TileManager : MonoBehaviour {
         tiles.Clear();
         timePassed = 0f;
 
-        AddTile(CreateTile());
+        AddTile(GetTile());
     }
 
-    private Tile CreateTile() {
+    //Moved to TileGenerator
+    /*private Tile CreateTile() {
         Tile tempTile = new Tile (3, 3, 4);
         return tempTile;
-    }
+    }*/
 
     private void AddTile (Tile t) {
 
@@ -211,12 +237,8 @@ public class TileManager : MonoBehaviour {
 
                 cubePosX = cubeIndexPos;
 
-
-                GameObject cube = Instantiate (prefabBlock);
-                cube.transform.position = new Vector3 (cubePosX, -cubePosY, 0);
-
+                t.Blocks[i].SetBlock(t.ID, prefabBlock, new Vector3(cubePosX, -cubePosY, 0), Quaternion.identity);
                 blocks [tempPosition] = t.Blocks [i];
-                t.Blocks [i].GO = cube;
             }
         }
 

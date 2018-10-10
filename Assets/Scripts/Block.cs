@@ -19,10 +19,21 @@ public class Block {
         TileID = tileID;
     }
 
+    public void SetBlock(int tileID, GameObject prefab, Vector3 position, Quaternion quaternion)
+    {
+        TileID = tileID;
+        go = GameObject.Instantiate(prefab, position, quaternion);
+    }
+
     public GameObject GO
     {
         get { return go; }
         set { go = value; }
+    }
+
+    public void SelfDestroy()
+    {
+        GameObject.Destroy(go);
     }
 
 
