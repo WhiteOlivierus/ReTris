@@ -11,6 +11,7 @@ public class TileManager {
     private int fieldHeight;
 
     private int startingPoint;
+    private int startingPointField;
 
     Tile playerTile;
 
@@ -20,6 +21,8 @@ public class TileManager {
     public float timePerMove;
 
     private float timePassed;
+
+    private float timeBeforeDown = 0.05f;
 
     Queue<Tile> tilesToAdd;
     List<Tile> tiles;
@@ -37,13 +40,21 @@ public class TileManager {
     }
 
     // Use this for initialization
-    void Start () {
+    public TileManager(Controller c, int s, int fw, int fh) {
         tiles = new List<Tile> ();
+        FieldWidth = fw;
+        FieldHeight = fh;
         blocks = new Block [fieldWidth * fieldHeight];
         timePassed = 0f;
-        player1 = new Controller (KeyCode.A, KeyCode.D, KeyCode.S, KeyCode.W);
+        timePerMove = 0.25f;
+        player1 = c;
+
+        PrefabManager pm = GameObject.Find("PrefabManager").GetComponent<PrefabManager>();
+        prefabBlock = pm.prefabBlock;
+        prefabBlockBorder = pm.prefabBorderBlock;
 
         startingPoint = fieldWidth / 2;
+        startingPointField = s;
 
         tilesToAdd = new Queue<Tile>();
 
@@ -57,7 +68,8 @@ public class TileManager {
 
     private void AddTileToQueue(Tile t)
     {
-        tilesToAdd.Enqueue(t);
+        Tile c = t.CloneTile();
+        tilesToAdd.Enqueue(c);
     }
 
     private Tile GetTile()
@@ -70,11 +82,7 @@ public class TileManager {
     }
 
     // Update is called once per frame
-    void FixedUpdate () {
-        if (Input.GetKeyDown (KeyCode.G)) {
-            AddTile(GetTile());
-        }
-
+    public void FixedUpdate () {
         if (playerTile != null) {
             timePassed += Time.deltaTime;
             if (timePassed >= timePerMove) {
@@ -91,11 +99,16 @@ public class TileManager {
             }
         }
 
+        if(timeBeforeDown < 0.26f) {
+            timeBeforeDown += Time.deltaTime;
+        }
+
         if (Input.GetKeyDown (player1.keyLeft)) {
             MoveTileLeft (playerTile);
         } else if (Input.GetKeyDown (player1.keyRight)) {
             MoveTileRight (playerTile);
-        } else if (Input.GetKey (player1.keyDown)) {
+        } else if (Input.GetKey (player1.keyDown) && timeBeforeDown > 0.25f) {
+            timeBeforeDown -= 0.25f;
             CheckDownPlayerTile (playerTile);
         } else if (Input.GetKeyDown (player1.keyRotate)) {
             RotateTile (playerTile);
@@ -106,17 +119,17 @@ public class TileManager {
         for (int i = 0; i < fieldWidth; i++)
         {
             Block b = new Block(-1);
-            b.SetBlock(-1, prefabBlockBorder, new Vector3(i, 1, 0), Quaternion.identity);
+            b.SetBlock(-1, prefabBlockBorder, new Vector3(i + startingPointField, 1, 0), Quaternion.identity);
             Block c = new Block(-1);
-            c.SetBlock(-1, prefabBlockBorder, new Vector3(i, -fieldHeight, 0), Quaternion.identity);
+            c.SetBlock(-1, prefabBlockBorder, new Vector3(i + startingPointField, -fieldHeight, 0), Quaternion.identity);
         }
 
         for (int i = 0; i < fieldHeight; i++)
         {
             Block b = new Block(-1);
-            b.SetBlock(-1, prefabBlockBorder, new Vector3(-1, -i, 0), Quaternion.identity);
+            b.SetBlock(-1, prefabBlockBorder, new Vector3(-1 + startingPointField, -i, 0), Quaternion.identity);
             Block c = new Block(-1);
-            c.SetBlock(-1, prefabBlockBorder, new Vector3(fieldWidth, -i, 0), Quaternion.identity);
+            c.SetBlock(-1, prefabBlockBorder, new Vector3(fieldWidth + startingPointField, -i, 0), Quaternion.identity);
         }
     }
 
@@ -195,9 +208,9 @@ public class TileManager {
         }
 
         tiles.Clear();
+        tiles.TrimExcess();
         timePassed = 0f;
-
-        AddTile(GetTile());
+        playerTile = null;
     }
 
     //Moved to TileGenerator
@@ -237,7 +250,7 @@ public class TileManager {
 
                 cubePosX = cubeIndexPos;
 
-                t.Blocks[i].SetBlock(t.ID, prefabBlock, new Vector3(cubePosX, -cubePosY, 0), Quaternion.identity);
+                t.Blocks[i].SetBlock(t.ID, prefabBlock, new Vector3(cubePosX + startingPointField, -cubePosY, 0), Quaternion.identity);
                 blocks [tempPosition] = t.Blocks [i];
             }
         }
@@ -470,7 +483,7 @@ public class TileManager {
                 foreach (Tile t in tilesToMoveDown) {
                     if (blocks [i].TileID == t.ID) {
                         blocks [i + fieldWidth] = blocks [i];
-                        blocks [i].GO.transform.Translate (0, -1, 0);
+                        blocks [i + fieldWidth].GO.transform.Translate (0, -1, 0);
                         blocks [i] = null;
                         break;
                     }

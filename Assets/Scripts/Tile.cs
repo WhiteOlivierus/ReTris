@@ -84,6 +84,12 @@ public class Tile {
         }
     }
 
+    public Tile CloneTile() {
+        Tile t = new Tile(TileWidth, TileHeight, AmtBlocks);
+        t.Blocks = Blocks;
+        return t;
+    }
+
 
     // Use this for initialization
     void Start () {
