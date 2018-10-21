@@ -17,6 +17,8 @@ public class TileGenerator {
             {
                 tileGenerator = new TileGenerator();
                 tileGenerator.onTileCreated = new OnTileCreated();
+                tileGenerator.tileManagers = new Dictionary<int, int>();
+                tileGenerator.tiles = new List<Tile>();
             }
             return tileGenerator;
         }
@@ -24,9 +26,31 @@ public class TileGenerator {
 
     public OnTileCreated onTileCreated;
 
-    public static void CreateTile()
+    private Dictionary<int, int> tileManagers;
+
+    private List<Tile> tiles;
+
+    public Tile GetTile(int tileManagerId)
+    {
+        if(tileManagers.ContainsKey(tileManagerId))
+        {
+            tileManagers[tileManagerId]++;
+        }
+        else
+        {
+            tileManagers.Add(tileManagerId, 1);
+        }
+
+        if (tileManagers[tileManagerId] - 1 >= tiles.Count)
+            CreateTile();
+
+        return tiles[tileManagers[tileManagerId] - 1];
+    }
+
+    public void CreateTile()
     {
         Tile tempTile = new Tile(3, 3, 4);
-        GetTileGenerator.onTileCreated.Invoke(tempTile);
+        tiles.Add(tempTile);
+        //GetTileGenerator.onTileCreated.Invoke(tempTile);
     }
 }

@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour {
 
     private List<TileManager> tileManagers = new List<TileManager>();
 
+    private int currentTileManager = 0;
+
 
     void Awake () {
         DontDestroyOnLoad (gameObject);
@@ -31,10 +33,30 @@ public class GameManager : MonoBehaviour {
         }
     }
 
+    void TempUpdate()
+    {
+        Debug.Log("Update " + currentTileManager.ToString());
+        tileManagers[currentTileManager].FixedUpdate();
+
+        if (currentTileManager >= tileManagers.Count - 1)
+        {
+            currentTileManager = 0;
+            Debug.Log("Set tilemanager to 0");
+        }
+        else
+        {
+            currentTileManager++;
+            Debug.Log("Set tilemanager to " + currentTileManager.ToString());
+        }
+    }
+
     void FixedUpdate() {
-        foreach(TileManager t in tileManagers) {
+        foreach(TileManager t in tileManagers)
+        {
             t.FixedUpdate();
         }
+        /*if(tileManagers.Count > 0)
+            TempUpdate();*/
     }
 
 
@@ -50,6 +72,7 @@ public class GameManager : MonoBehaviour {
 
     public void TestStartGame() {
         Debug.Log("Start game");
+        TileManager.currentid = 0;
 
         Controller c = new Controller(KeyCode.A, KeyCode.D, KeyCode.S, KeyCode.W);
         Controller c2 = new Controller(KeyCode.J, KeyCode.L, KeyCode.K, KeyCode.I);

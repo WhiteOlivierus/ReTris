@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class TileManager {
 
+    public static int currentid;
+
+    private int id;
+
     Block [] blocks;
     [SerializeField]
     private int fieldWidth;
@@ -18,11 +22,13 @@ public class TileManager {
     public GameObject prefabBlock;
     public GameObject prefabBlockBorder;
 
-    public float timePerMove;
+    public float timePerMove = 0.25f;
 
     private float timePassed;
 
     private float timeBeforeDown = 0.05f;
+
+    private TileGenerator tg;
 
     Queue<Tile> tilesToAdd;
     List<Tile> tiles;
@@ -49,6 +55,9 @@ public class TileManager {
         timePerMove = 0.25f;
         player1 = c;
 
+        id = currentid;
+        currentid++;
+
         PrefabManager pm = GameObject.Find("PrefabManager").GetComponent<PrefabManager>();
         prefabBlock = pm.prefabBlock;
         prefabBlockBorder = pm.prefabBorderBlock;
@@ -57,61 +66,70 @@ public class TileManager {
         startingPointField = s;
 
         tilesToAdd = new Queue<Tile>();
+        
+        tg = TileGenerator.GetTileGenerator;
+        tg.onTileCreated.AddListener(AddTileToQueue);
 
-        TileGenerator.GetTileGenerator.onTileCreated.AddListener(AddTileToQueue);
-
-        TileGenerator.CreateTile();
+        tg.CreateTile();
 
         AddBorder();
-        AddTile(GetTile());
+        AddTile(tg.GetTile(id));
     }
 
-    private void AddTileToQueue(Tile t)
-    {
-        Tile c = t.CloneTile();
-        tilesToAdd.Enqueue(c);
-    }
-
-    private Tile GetTile()
-    {
-        if (tilesToAdd.Count <= 1)
-        {
-            TileGenerator.CreateTile();
-        }
-        return tilesToAdd.Dequeue();        
-    }
+    
 
     // Update is called once per frame
     public void FixedUpdate () {
-        if (playerTile != null) {
-            timePassed += Time.deltaTime;
-            if (timePassed >= timePerMove) {
-                if (!CheckDownPlayerTile (playerTile)) {
-                    
-                    while(CheckForRows())
+        if (playerTile != null)
+        {
+            if (timeBeforeDown < 0.06f)
+            {
+                timeBeforeDown += Time.deltaTime;
+            }
+
+            if (Input.GetKeyDown(player1.keyLeft))
+            {
+                MoveTileLeft(playerTile);
+            }
+            else if (Input.GetKeyDown(player1.keyRight))
+            {
+                MoveTileRight(playerTile);
+            }
+            else if (Input.GetKey(player1.keyDown) && timeBeforeDown > 0.05f)
+            {
+                timeBeforeDown -= 0.05f;
+                if (!CheckDownPlayerTile(playerTile))
+                {
+                    while (CheckForRows())
                     {
                         Debug.Log("Row has been cleared");
                     }
-                    
-                    AddTile(GetTile());
+
+                    AddTile(tg.GetTile(id));
                 }
                 timePassed = 0f;
             }
-        }
+            else if (Input.GetKeyDown(player1.keyRotate))
+            {
+                RotateTile(playerTile);
+            }
 
-        if(timeBeforeDown < 0.26f) {
-            timeBeforeDown += Time.deltaTime;
-        }
 
-        if (Input.GetKeyDown (player1.keyLeft)) {
-            MoveTileLeft (playerTile);
-        } else if (Input.GetKeyDown (player1.keyRight)) {
-            MoveTileRight (playerTile);
-        } else if (Input.GetKey (player1.keyDown) && timeBeforeDown > 0.25f) {
-            timeBeforeDown -= 0.25f;
-            CheckDownPlayerTile (playerTile);
-        } else if (Input.GetKeyDown (player1.keyRotate)) {
-            RotateTile (playerTile);
+
+            timePassed += Time.deltaTime;
+            if (timePassed >= timePerMove)
+            {
+                if (!CheckDownPlayerTile(playerTile))
+                {
+                    while (CheckForRows())
+                    {
+                        Debug.Log("Row has been cleared");
+                    }
+
+                    AddTile(tg.GetTile(id));
+                }
+                timePassed = 0f;
+            }
         }
     }
 
@@ -162,6 +180,7 @@ public class TileManager {
 
     private void ClearRow(int rowIndex)
     {
+        Debug.Log(id + ": Clear row " + rowIndex);
         for (int i = 0; i < fieldWidth; i++)
         {
             foreach (Tile t in tiles)
@@ -189,6 +208,7 @@ public class TileManager {
 
     private bool CheckGameOver(int index) {
         if(blocks[index] != null) {
+            Debug.Log(index.ToString() + " is not null");
             return true;
         }
         return false;
@@ -199,6 +219,7 @@ public class TileManager {
     }
 
     private void ResetGame() {
+        Debug.Log("Reset tilemanager " + id.ToString());
         for (int i = 0; i < blocks.Length; i++)
         {
             if(blocks[i] != null) {
@@ -213,13 +234,14 @@ public class TileManager {
         playerTile = null;
     }
 
-    //Moved to TileGenerator
-    /*private Tile CreateTile() {
-        Tile tempTile = new Tile (3, 3, 4);
-        return tempTile;
-    }*/
+    private void AddTileToQueue(Tile t)
+    {
+        
+    }
 
-    private void AddTile (Tile t) {
+    private void AddTile (Tile c) {
+
+        Tile t = c.CloneTile();
 
         bool gameOver = false;
 
@@ -257,6 +279,8 @@ public class TileManager {
 
         if(!gameOver) {
             tiles.Add (t);
+
+            Debug.Log(id + ": New player tile");
 
             playerTile = t;
         }
@@ -417,37 +441,6 @@ public class TileManager {
         }
     }
 
-    private void CheckDown () {
-        List<Tile> tempTiles = new List<Tile> ();
-
-        bool[] tilesMoveDown = new bool[tiles.Count];
-
-        foreach (Tile t in tiles) {
-            bool clearDown = true;
-
-            foreach (Block b in t.Blocks) {
-                int index = System.Array.IndexOf (blocks, b);
-                if (index + fieldWidth < fieldWidth * fieldHeight) {
-                    if (blocks [index + fieldWidth] != null) {
-                        if (blocks [index + fieldWidth].TileID != t.ID) {
-                            clearDown = false;
-                            break;
-                        }
-                    }
-                } else {
-                    clearDown = false;
-                    break;
-                }
-            }
-
-            if (clearDown) tempTiles.Add (t);
-        }
-
-        if(tempTiles.Count > 0) {
-            MoveDownInOrder (tempTiles);
-        }
-    }
-
     private bool CheckDownPlayerTile (Tile t) {
         List<Tile> tileToMoveDown = new List<Tile> ();
         bool clearDown = true;
@@ -458,11 +451,15 @@ public class TileManager {
                 if (index + fieldWidth < fieldWidth * fieldHeight) {
                     if (blocks [index + fieldWidth] != null) {
                         if (blocks [index + fieldWidth].TileID != t.ID) {
+                            Debug.Log(id + ": Tile id: " + t.ID);
+                            Debug.Log(id + ": Tile is trying to move onto a different tile");
+                            Debug.Log(id + ": Tile id trying to move onto is " + blocks[index + fieldWidth].TileID);
                             clearDown = false;
                             break;
                         }
                     }
                 } else {
+                    Debug.Log(id + ": Tile is trying to move out of range");
                     clearDown = false;
                     break;
                 }
@@ -474,10 +471,13 @@ public class TileManager {
             MoveDownInOrder (tileToMoveDown);
             return true;
         }
+
+        Debug.Log(id + ": Can't move playertile");
         return false;
     }
 
     private void MoveDownInOrder (List<Tile> tilesToMoveDown) {
+        Debug.Log(id + ": Move down player tile");
         for (int i = fieldWidth * fieldHeight - 1; i >= 0; i--) {
             if (blocks [i] != null) {
                 foreach (Tile t in tilesToMoveDown) {

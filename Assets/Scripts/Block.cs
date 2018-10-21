@@ -23,6 +23,7 @@ public class Block {
     {
         TileID = tileID;
         go = GameObject.Instantiate(prefab, position, quaternion);
+        go.name = TileID.ToString();
     }
 
     public GameObject GO
@@ -33,6 +34,7 @@ public class Block {
 
     public void SelfDestroy()
     {
+        Debug.Log("Destroy self");
         GameObject.Destroy(go);
     }
 

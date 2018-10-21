@@ -86,7 +86,14 @@ public class Tile {
 
     public Tile CloneTile() {
         Tile t = new Tile(TileWidth, TileHeight, AmtBlocks);
-        t.Blocks = Blocks;
+        for (int i = 0; i < Blocks.Length; i++)
+        {
+            t.Blocks[i] = null;
+            if(Blocks[i] != null)
+            {
+                t.Blocks[i] = new Block(t.ID);
+            }
+        }
         return t;
     }
 
