@@ -144,6 +144,9 @@ MonoBehaviour:
     type: 2}
   prefabBorderBlock: {fileID: 1761303888139358, guid: 09cc89ff1fdc0b446bfa0612355580fc,
     type: 2}
+  dropFasterCube: {fileID: 2100000, guid: e44abca36680ae249978803750adcdf5, type: 2}
+  blockRotationCube: {fileID: 2100000, guid: 18e8405320838974ab9033b6955a9f2c, type: 2}
+  switchMovementCube: {fileID: 2100000, guid: fc46372b6923bce4ab6f38239d216276, type: 2}
 --- !u!4 &18480069
 Transform:
   m_ObjectHideFlags: 0

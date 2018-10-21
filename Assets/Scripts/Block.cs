@@ -19,11 +19,24 @@ public class Block {
         TileID = tileID;
     }
 
-    public void SetBlock(int tileID, GameObject prefab, Vector3 position, Quaternion quaternion)
+    public void SetBlock(int tileID, GameObject prefab, Vector3 position, Quaternion quaternion, SpecialEffect se)
     {
         TileID = tileID;
         go = GameObject.Instantiate(prefab, position, quaternion);
         go.name = TileID.ToString();
+
+        switch(se)
+        {
+            case SpecialEffect.DROPFASTER:
+                go.GetComponent<Renderer>().material = PrefabManager.cubeDropFaster;
+                break;
+            case SpecialEffect.BLOCKROTATION:
+                go.GetComponent<Renderer>().material = PrefabManager.cubeBlockRotation;
+                break;
+            case SpecialEffect.SWITCHMOVEMENT:
+                go.GetComponent<Renderer>().material = PrefabManager.cubeSwitchMovement;
+                break;
+        }
     }
 
     public GameObject GO
@@ -37,15 +50,4 @@ public class Block {
         Debug.Log("Destroy self");
         GameObject.Destroy(go);
     }
-
-
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 }

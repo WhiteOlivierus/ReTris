@@ -1,12 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+
+public class SpecialEffectEvent : UnityEvent<SpecialEffect, int> { }
 
 public class TileManager {
 
     public static int currentid;
 
-    private int id;
+    public static SpecialEffectEvent OnSpecialEffect;
+
+    public int id;
 
     Block [] blocks;
     [SerializeField]
@@ -17,14 +22,17 @@ public class TileManager {
     private int startingPoint;
     private int startingPointField;
 
+    private bool blockRotation;
+
     Tile playerTile;
 
     public GameObject prefabBlock;
     public GameObject prefabBlockBorder;
 
-    public float timePerMove = 0.25f;
+    public float timePerMove = 0.5f;
 
     private float timePassed;
+    private float specialEffectTimer;
 
     private float timeBeforeDown = 0.05f;
 
@@ -32,6 +40,8 @@ public class TileManager {
 
     Queue<Tile> tilesToAdd;
     List<Tile> tiles;
+
+    SpecialEffect currentSpecialEffect;
 
     Controller player1;
 
@@ -55,9 +65,11 @@ public class TileManager {
         timePerMove = 0.25f;
         player1 = c;
 
+        currentSpecialEffect = SpecialEffect.NONE;
+        specialEffectTimer = 0;
+
         id = currentid;
         currentid++;
-
         PrefabManager pm = GameObject.Find("PrefabManager").GetComponent<PrefabManager>();
         prefabBlock = pm.prefabBlock;
         prefabBlockBorder = pm.prefabBorderBlock;
@@ -74,12 +86,93 @@ public class TileManager {
 
         AddBorder();
         AddTile(tg.GetTile(id));
+
+        blockRotation = false;
+
+        if(OnSpecialEffect == null)
+        {
+            OnSpecialEffect = new SpecialEffectEvent();
+        }
+
+        OnSpecialEffect.AddListener(ApplyEffect);
     }
 
+    public void ApplyEffect(SpecialEffect se, int sentId)
+    {
+        if (id != sentId)
+        {
+            if (currentSpecialEffect == SpecialEffect.NONE)
+            {
+                currentSpecialEffect = se;
+
+                switch (se)
+                {
+                    case SpecialEffect.DROPFASTER:
+                        timePerMove = timePerMove / 3;
+                        specialEffectTimer = 5.0f;
+                        break;
+                    case SpecialEffect.BLOCKROTATION:
+                        blockRotation = true;
+                        specialEffectTimer = 5.0f;
+                        break;
+                    case SpecialEffect.SWITCHMOVEMENT:
+                        KeyCode left = player1.keyLeft;
+                        player1.keyLeft = player1.keyRight;
+                        player1.keyRight = left;
+                        specialEffectTimer = 5.0f;
+                        break;
+                }
+            }
+        }
+    }
+
+    private void DisableEffect()
+    {
+        if(currentSpecialEffect != SpecialEffect.NONE)
+        {
+            switch(currentSpecialEffect)
+            {
+                case SpecialEffect.DROPFASTER:
+                    timePerMove = timePerMove * 3;
+                    break;
+                case SpecialEffect.BLOCKROTATION:
+                    blockRotation = false;
+                    break;
+                case SpecialEffect.SWITCHMOVEMENT:
+                    KeyCode left = player1.keyLeft;
+                    player1.keyLeft = player1.keyRight;
+                    player1.keyRight = left;
+                    break;
+            }
+            currentSpecialEffect = SpecialEffect.NONE;
+        }
+    }
+
+    private float SpecialEffectTimer
+    {
+        get
+        {
+            return specialEffectTimer;
+        }
+        set
+        {
+            if(value <= 0 && specialEffectTimer > 0)
+            {
+                DisableEffect();
+            }
+            specialEffectTimer = value;
+        }
+    }
     
 
     // Update is called once per frame
     public void FixedUpdate () {
+
+        if(SpecialEffectTimer > 0.0f)
+        {
+            SpecialEffectTimer -= Time.deltaTime;
+        }
+
         if (playerTile != null)
         {
             if (timeBeforeDown < 0.06f)
@@ -109,7 +202,7 @@ public class TileManager {
                 }
                 timePassed = 0f;
             }
-            else if (Input.GetKeyDown(player1.keyRotate))
+            else if (Input.GetKeyDown(player1.keyRotate) && !blockRotation)
             {
                 RotateTile(playerTile);
             }
@@ -137,17 +230,17 @@ public class TileManager {
         for (int i = 0; i < fieldWidth; i++)
         {
             Block b = new Block(-1);
-            b.SetBlock(-1, prefabBlockBorder, new Vector3(i + startingPointField, 1, 0), Quaternion.identity);
+            b.SetBlock(-1, prefabBlockBorder, new Vector3(i + startingPointField, 1, 0), Quaternion.identity, SpecialEffect.NONE);
             Block c = new Block(-1);
-            c.SetBlock(-1, prefabBlockBorder, new Vector3(i + startingPointField, -fieldHeight, 0), Quaternion.identity);
+            c.SetBlock(-1, prefabBlockBorder, new Vector3(i + startingPointField, -fieldHeight, 0), Quaternion.identity, SpecialEffect.NONE);
         }
 
         for (int i = 0; i < fieldHeight; i++)
         {
             Block b = new Block(-1);
-            b.SetBlock(-1, prefabBlockBorder, new Vector3(-1 + startingPointField, -i, 0), Quaternion.identity);
+            b.SetBlock(-1, prefabBlockBorder, new Vector3(-1 + startingPointField, -i, 0), Quaternion.identity, SpecialEffect.NONE);
             Block c = new Block(-1);
-            c.SetBlock(-1, prefabBlockBorder, new Vector3(fieldWidth + startingPointField, -i, 0), Quaternion.identity);
+            c.SetBlock(-1, prefabBlockBorder, new Vector3(fieldWidth + startingPointField, -i, 0), Quaternion.identity, SpecialEffect.NONE);
         }
     }
 
@@ -187,6 +280,19 @@ public class TileManager {
             {
                 if(blocks[rowIndex * fieldWidth + i].TileID == t.ID)
                 {
+                    if(t.specialEffect != SpecialEffect.NONE)
+                    {
+                        Debug.Log("Trigger special effect: " + t.specialEffect.ToString());
+                        OnSpecialEffect.Invoke(t.specialEffect, id);
+                        foreach(Block b in t.Blocks)
+                        {
+                            if (b != null)
+                            {
+                                b.GO.GetComponent<Renderer>().material = prefabBlock.GetComponent<Renderer>().sharedMaterial;
+                            }
+                        }
+                        t.specialEffect = SpecialEffect.NONE;
+                    }
                     int index = System.Array.IndexOf(t.Blocks, blocks[rowIndex * fieldWidth + i]);
                     t.Blocks[index] = null;
                 }
@@ -272,7 +378,7 @@ public class TileManager {
 
                 cubePosX = cubeIndexPos;
 
-                t.Blocks[i].SetBlock(t.ID, prefabBlock, new Vector3(cubePosX + startingPointField, -cubePosY, 0), Quaternion.identity);
+                t.Blocks[i].SetBlock(t.ID, prefabBlock, new Vector3(cubePosX + startingPointField, -cubePosY, 0), Quaternion.identity, t.specialEffect);
                 blocks [tempPosition] = t.Blocks [i];
             }
         }

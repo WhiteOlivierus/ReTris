@@ -2,6 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum SpecialEffect
+{
+    DROPFASTER,
+    RANDOMTILE,
+    BLOCKROTATION,
+    SWITCHMOVEMENT,
+    NONE
+}
+
 public class Tile {
 
     private static int currentid;
@@ -12,6 +21,7 @@ public class Tile {
     private int amtBlocks;
     private int id;
 
+    public SpecialEffect specialEffect;
 
     public int TileWidth
     {
@@ -82,6 +92,18 @@ public class Tile {
                 AddOptions(options, allOptions, rnd);
             }
         }
+
+        int rnd1 = Random.Range(0, 40);
+        if (rnd1 == 0)
+            specialEffect = SpecialEffect.DROPFASTER;
+        else if (rnd1 == 1)
+            specialEffect = SpecialEffect.RANDOMTILE;
+        else if (rnd1 == 2)
+            specialEffect = SpecialEffect.BLOCKROTATION;
+        else if (rnd1 == 3)
+            specialEffect = SpecialEffect.SWITCHMOVEMENT;
+        else
+            specialEffect = SpecialEffect.NONE;
     }
 
     public Tile CloneTile() {
