@@ -29,6 +29,8 @@ public class GameManager : MonoBehaviour {
 
     private bool gameStarted = false;
 
+    private Vector3 newCamPosition;
+
     void Awake () {
         DontDestroyOnLoad (gameObject);
     }
@@ -39,6 +41,7 @@ public class GameManager : MonoBehaviour {
         if (sceneName == "scene_0" && !gameStarted) {
             gameStarted = true;
             LoadPlayField ();
+            Camera.main.transform.position = newCamPosition;
         }
     }
 
@@ -78,6 +81,7 @@ public class GameManager : MonoBehaviour {
             tileManagers.Add (t);
             lastPos += fieldHeightValue + offsetField;
         }
+        newCamPosition = new Vector3 (lastPos / 2, fieldHeightValue / 2, fieldWidthValue);
     }
 
 
