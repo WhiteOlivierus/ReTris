@@ -81,7 +81,7 @@ public class GameManager : MonoBehaviour {
             tileManagers.Add (t);
             lastPos += fieldHeightValue + offsetField;
         }
-        newCamPosition = new Vector3 (lastPos / 2, fieldHeightValue / 2, fieldWidthValue);
+        newCamPosition = new Vector3 ((lastPos - ((offsetField * playerCountValue) / 2)) / 2, (fieldHeightValue / 2) * -1, 30f * -1f);
     }
 
 
@@ -90,11 +90,10 @@ public class GameManager : MonoBehaviour {
         fieldWidthValue = Int32.Parse (fieldWidth.text);
         fieldHeightValue = Int32.Parse (fieldHeight.text);
 
-        for (int i = 0; i < playerCountValue; i++) {
-            GameObject [] go = GameObject.FindGameObjectsWithTag ("Input");
-            foreach (GameObject tempC in go) {
-                playerControllers.Add (tempC.GetComponent<UIManager> ().c);
-            }
+        GameObject [] go = GameObject.FindGameObjectsWithTag ("Input");
+
+        foreach (GameObject tempC in go) {
+            playerControllers.Add (tempC.GetComponent<UIManager> ().c);
         }
     }
 
