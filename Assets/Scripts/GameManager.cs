@@ -10,113 +10,92 @@ public class GameManager : MonoBehaviour {
 
 
     public int points = 0;
-    public int playerCount = 1;
-    public int fieldHeight = 10;
-    public int fieldWidth = 10;
+    public int offsetField = 10;
 
-    private List<int> properties = new List<int> ();
-    private List<KeyCode> playersInput = new List<KeyCode> ();
-    private List<GameObject> playerControllers = new List<GameObject> ();
 
-    private List<TileManager> tileManagers = new List<TileManager>();
+    public Text playerCount;
+    public Text fieldHeight;
+    public Text fieldWidth;
+
+    private int playerCountValue;
+    private int fieldWidthValue;
+    private int fieldHeightValue;
+
+    private List<Controller> playerControllers = new List<Controller> ();
+
+    private List<TileManager> tileManagers = new List<TileManager> ();
 
     private int currentTileManager = 0;
 
+    private bool gameStarted = false;
+
+    private Vector3 newCamPosition;
 
     void Awake () {
         DontDestroyOnLoad (gameObject);
     }
 
-    void Update() {
-        if(Input.GetKeyDown(KeyCode.G)) {
-            TestStartGame();
+    void Update () {
+        Scene currentScene = SceneManager.GetActiveScene ();
+        string sceneName = currentScene.name;
+        if (sceneName == "scene_0" && !gameStarted) {
+            gameStarted = true;
+            LoadPlayField ();
+            Camera.main.transform.position = newCamPosition;
         }
     }
 
-    void TempUpdate()
-    {
-        Debug.Log("Update " + currentTileManager.ToString());
-        tileManagers[currentTileManager].FixedUpdate();
+    void TempUpdate () {
+        Debug.Log ("Update " + currentTileManager.ToString ());
+        tileManagers [currentTileManager].FixedUpdate ();
 
-        if (currentTileManager >= tileManagers.Count - 1)
-        {
+        if (currentTileManager >= tileManagers.Count - 1) {
             currentTileManager = 0;
-            Debug.Log("Set tilemanager to 0");
-        }
-        else
-        {
+            Debug.Log ("Set tilemanager to 0");
+        } else {
             currentTileManager++;
-            Debug.Log("Set tilemanager to " + currentTileManager.ToString());
+            Debug.Log ("Set tilemanager to " + currentTileManager.ToString ());
         }
     }
 
-    void FixedUpdate() {
-        foreach(TileManager t in tileManagers)
-        {
-            t.FixedUpdate();
+    void FixedUpdate () {
+        foreach (TileManager t in tileManagers) {
+            t.FixedUpdate ();
         }
-        /*if(tileManagers.Count > 0)
-            TempUpdate();*/
     }
 
 
     public void StartGame () {
         GetInitData ();
         SceneManager.LoadScene (1);
-        //CreatePlayers ();
-        for (int i = 0; i < playerControllers.Count; i++)
-        {
-            //TileManager t = new TileManager(playerControllers[i].GetComponent<Controller>(), i * 25);
-        }
     }
 
-    public void TestStartGame() {
-        Debug.Log("Start game");
+
+    public void LoadPlayField () {
+        Debug.Log ("Start game");
         TileManager.currentid = 0;
-
-        Controller c = new Controller(KeyCode.A, KeyCode.D, KeyCode.S, KeyCode.W);
-        Controller c2 = new Controller(KeyCode.J, KeyCode.L, KeyCode.K, KeyCode.I);
-        Controller c3 = new Controller(KeyCode.LeftArrow, KeyCode.RightArrow, KeyCode.DownArrow, KeyCode.UpArrow);
-
-        TileManager t = new TileManager(c, 0, 10, 20);
-        tileManagers.Add(t);
-        TileManager t2 = new TileManager(c2, 15, 10, 20);
-        tileManagers.Add(t2);
-        TileManager t3 = new TileManager(c3, 30, 10, 20);
-        tileManagers.Add(t3);
+        int lastPos = 0;
+        for (int i = 0; i < playerControllers.Count; i++) {
+            Debug.Log ("create field");
+            TileManager t = new TileManager (playerControllers [i], lastPos, fieldHeightValue, fieldWidthValue);
+            tileManagers.Add (t);
+            lastPos += fieldHeightValue + offsetField;
+        }
+        newCamPosition = new Vector3 ((lastPos - ((offsetField * playerCountValue) / 2)) / 2, (fieldHeightValue / 2) * -1, 30f * -1f);
     }
 
 
     private void GetInitData () {
-        GameObject [] go = GameObject.FindGameObjectsWithTag ("UI Data");
+        playerCountValue = Int32.Parse (playerCount.text);
+        fieldWidthValue = Int32.Parse (fieldWidth.text);
+        fieldHeightValue = Int32.Parse (fieldHeight.text);
 
-        foreach (GameObject g in go) {
-            if (g.transform.parent.name == "Amount") {
-                properties.Add (Int32.Parse (g.GetComponent<Text> ().text));
-            } else {
-                playersInput.Add (getPlayerKeyBindings (g));
-            }
+        GameObject [] go = GameObject.FindGameObjectsWithTag ("Input");
+
+        foreach (GameObject tempC in go) {
+            playerControllers.Add (tempC.GetComponent<UIManager> ().c);
         }
     }
-
-
-    private KeyCode getPlayerKeyBindings (GameObject g) {
-        KeyCode pK;
-        string pKS = g.GetComponent<Text> ().text;
-        pK = (KeyCode) System.Enum.Parse (typeof (KeyCode), pKS);
-        return pK;
-    }
-
-
-    /*private void CreatePlayers () {
-        for (int i = 0; i < properties [0] * 4; i += 4) {
-            List<KeyCode> t = playersInput.GetRange (i, i + 4);
-            GameObject c = new GameObject ("Controller");
-            c.AddComponent<Controller> ();
-            c.GetComponent<Controller> ().SetKeys (t.ToArray ());
-            playerControllers.Add (c);
-        }
-    } */
 
 
     public void EndGame () {

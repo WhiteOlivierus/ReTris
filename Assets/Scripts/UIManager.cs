@@ -11,6 +11,7 @@ public class UIManager : MonoBehaviour {
     private List<GameObject> pC = new List<GameObject> ();
     private int _min = 1;
     private int _max = 3;
+    public Controller c = new Controller (KeyCode.LeftArrow, KeyCode.RightArrow, KeyCode.DownArrow, KeyCode.UpArrow);
 
 
     //This is the functionality for adding/removing 1 to a counter
@@ -63,17 +64,35 @@ public class UIManager : MonoBehaviour {
 
     IEnumerator getKey (Text btnText) {
         string k = btnText.text;
-        btnText.text = "";
+        // btnText.text = "";
 
         yield return new WaitUntil (() => Input.anyKeyDown == true);
 
         foreach (KeyCode vKey in System.Enum.GetValues (typeof (KeyCode))) {
             if (Input.GetKey (vKey)) {
+
+                switch (btnText.name) {
+                    case "left":
+                        c.keyLeft = vKey;
+                        break;
+                    case "down":
+                        c.keyDown = vKey;
+                        break;
+                    case "right":
+                        c.keyRight = vKey;
+                        break;
+                    case "up":
+                        c.keyRotate = vKey;
+                        break;
+                    default:
+                        break;
+                }
+
                 k = vKey.ToString ();
+                btnText.text = k;
+                break;
             }
         }
-
-        btnText.text = k;
 
         yield return null;
     }
