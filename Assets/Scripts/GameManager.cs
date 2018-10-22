@@ -43,6 +43,11 @@ public class GameManager : MonoBehaviour {
             LoadPlayField ();
             Camera.main.transform.position = newCamPosition;
         }
+
+        foreach (TileManager t in tileManagers) {
+            Debug.Log (t.id);
+            t.FixedUpdate ();
+        }
     }
 
     void TempUpdate () {
@@ -55,12 +60,6 @@ public class GameManager : MonoBehaviour {
         } else {
             currentTileManager++;
             Debug.Log ("Set tilemanager to " + currentTileManager.ToString ());
-        }
-    }
-
-    void FixedUpdate () {
-        foreach (TileManager t in tileManagers) {
-            t.FixedUpdate ();
         }
     }
 
