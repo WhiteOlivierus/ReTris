@@ -45,7 +45,7 @@ public class TileManager {
 
     private SpecialEffect currentSpecialEffect;
 
-    private Controller player1;
+    private Controller player;
 
     public int FieldWidth {
         get { return fieldWidth; }
@@ -77,7 +77,7 @@ public class TileManager {
         blocks = new Block [fieldWidth * fieldHeight];
         timePassed = 0f;
         timePerMove = 0.25f;
-        player1 = c;
+        player = c;
 
         currentSpecialEffect = SpecialEffect.NONE;
         specialEffectTimer = 0;
@@ -126,9 +126,9 @@ public class TileManager {
                         specialEffectTimer = 5.0f;
                         break;
                     case SpecialEffect.SWITCHMOVEMENT:
-                        KeyCode left = player1.keyLeft;
-                        player1.keyLeft = player1.keyRight;
-                        player1.keyRight = left;
+                        KeyCode left = player.keyLeft;
+                        player.keyLeft = player.keyRight;
+                        player.keyRight = left;
                         specialEffectTimer = 5.0f;
                         break;
                 }
@@ -148,9 +148,9 @@ public class TileManager {
                     blockRotation = false;
                     break;
                 case SpecialEffect.SWITCHMOVEMENT:
-                    KeyCode left = player1.keyLeft;
-                    player1.keyLeft = player1.keyRight;
-                    player1.keyRight = left;
+                    KeyCode left = player.keyLeft;
+                    player.keyLeft = player.keyRight;
+                    player.keyRight = left;
                     break;
             }
             currentSpecialEffect = SpecialEffect.NONE;
@@ -169,11 +169,11 @@ public class TileManager {
                 timeBeforeDown += Time.deltaTime;
             }
 
-            if (Input.GetKeyDown (player1.keyLeft)) {
+            if (Input.GetKeyDown (player.keyLeft)) {
                 MoveTileLeft (playerTile);
-            } else if (Input.GetKeyDown (player1.keyRight)) {
+            } else if (Input.GetKeyDown (player.keyRight)) {
                 MoveTileRight (playerTile);
-            } else if (Input.GetKey (player1.keyDown) && timeBeforeDown > 0.05f) {
+            } else if (Input.GetKey (player.keyDown) && timeBeforeDown > 0.05f) {
                 timeBeforeDown -= 0.05f;
 
                 if (!CheckDownPlayerTile (playerTile)) {
@@ -184,7 +184,7 @@ public class TileManager {
                     AddTile (tg.GetTile (id));
                 }
                 timePassed = 0f;
-            } else if (Input.GetKeyDown (player1.keyRotate) && !blockRotation) {
+            } else if (Input.GetKeyDown (player.keyRotate) && !blockRotation) {
                 RotateTile (playerTile);
             }
 
@@ -317,22 +317,22 @@ public class TileManager {
     }
 
 
-    private void AddTile (Tile c) {
-        Tile t = c.CloneTile ();
+    private void AddTile (Tile t) {
+        Tile c = t.CloneTile ();
 
         bool gameOver = false;
 
-        for (int i = 0; i < t.TileWidth * t.TileHeight; i++) {
+        for (int i = 0; i < c.TileWidth * c.TileHeight; i++) {
 
-            if (t.Blocks [i] != null) {
+            if (c.Blocks [i] != null) {
                 int tempTileSize = i;
                 int tempPosition = 0;
 
-                while (tempTileSize >= t.TileWidth) {
-                    tempTileSize -= t.TileWidth;
+                while (tempTileSize >= c.TileWidth) {
+                    tempTileSize -= c.TileWidth;
                     tempPosition += fieldWidth;
                 }
-                tempPosition += tempTileSize += startingPoint - t.TileWidth / 2;
+                tempPosition += tempTileSize += startingPoint - c.TileWidth / 2;
 
                 if (CheckGameOver (tempPosition)) {
                     GameOver ();
@@ -351,17 +351,17 @@ public class TileManager {
 
                 cubePosX = cubeIndexPos;
 
-                t.Blocks [i].SetBlock (t.ID, prefabBlock, new Vector3 (cubePosX + startingPointField, -cubePosY, 0), Quaternion.identity, t.specialEffect);
-                blocks [tempPosition] = t.Blocks [i];
+                c.Blocks [i].SetBlock (c.ID, prefabBlock, new Vector3 (cubePosX + startingPointField, -cubePosY, 0), Quaternion.identity, c.specialEffect);
+                blocks [tempPosition] = c.Blocks [i];
             }
         }
 
         if (!gameOver) {
-            tiles.Add (t);
+            tiles.Add (c);
 
             Debug.Log (id + ": New player tile");
 
-            playerTile = t;
+            playerTile = c;
         }
     }
 

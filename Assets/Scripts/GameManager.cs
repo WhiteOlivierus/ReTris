@@ -50,20 +50,6 @@ public class GameManager : MonoBehaviour {
     }
 
 
-    void TempUpdate () {
-        Debug.Log ("Update " + currentTileManager.ToString ());
-        tileManagers [currentTileManager].FixedUpdate ();
-
-        if (currentTileManager >= tileManagers.Count - 1) {
-            currentTileManager = 0;
-            Debug.Log ("Set tilemanager to 0");
-        } else {
-            currentTileManager++;
-            Debug.Log ("Set tilemanager to " + currentTileManager.ToString ());
-        }
-    }
-
-
     public void StartGame () {
         GetInitData ();
         SceneManager.LoadScene (1);
@@ -104,12 +90,12 @@ public class GameManager : MonoBehaviour {
 
         if (playersGameOver >= playerCountValue) {
             Camera.main.transform.GetChild (0).GetComponent<MeshRenderer> ().enabled = true;
-            StartCoroutine ("toMain");
+            StartCoroutine ("ToMain");
         }
     }
 
 
-    IEnumerator toMain () {
+    IEnumerator ToMain () {
         yield return new WaitForSeconds (2f);
         SceneManager.LoadScene (0);
     }
