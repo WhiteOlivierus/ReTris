@@ -12,32 +12,28 @@ public class GameManager : MonoBehaviour {
     public int points = 0;
     public int offsetField = 10;
 
-
-    public Text playerCount;
-    public Text fieldHeight;
-    public Text fieldWidth;
-
-    private int playerCountValue;
-    private int fieldWidthValue;
-    private int fieldHeightValue;
+    public Text playerCount, fieldHeight, fieldWidth;
+    private int playerCountValue, fieldWidthValue, fieldHeightValue;
 
     private List<Controller> playerControllers = new List<Controller> ();
 
     private List<TileManager> tileManagers = new List<TileManager> ();
-
     private int currentTileManager = 0;
 
     private bool gameStarted = false;
 
     private Vector3 newCamPosition;
 
+
     void Awake () {
         DontDestroyOnLoad (gameObject);
     }
 
+
     void Update () {
         Scene currentScene = SceneManager.GetActiveScene ();
         string sceneName = currentScene.name;
+
         if (sceneName == "scene_0" && !gameStarted) {
             gameStarted = true;
             LoadPlayField ();
@@ -49,6 +45,7 @@ public class GameManager : MonoBehaviour {
             t.FixedUpdate ();
         }
     }
+
 
     void TempUpdate () {
         Debug.Log ("Update " + currentTileManager.ToString ());
@@ -74,13 +71,15 @@ public class GameManager : MonoBehaviour {
         Debug.Log ("Start game");
         TileManager.currentid = 0;
         int lastPos = 0;
+
         for (int i = 0; i < playerControllers.Count; i++) {
             Debug.Log ("create field");
             TileManager t = new TileManager (playerControllers [i], lastPos, fieldHeightValue, fieldWidthValue);
             tileManagers.Add (t);
             lastPos += fieldHeightValue + offsetField;
         }
-        newCamPosition = new Vector3 ((lastPos - ((offsetField * playerCountValue) / 2)) / 2, (fieldHeightValue / 2) * -1, 30f * -1f);
+
+        newCamPosition = new Vector3 (((lastPos - ((offsetField * playerCountValue) / 2f)) / 2f) - .5f, ((fieldWidthValue / 2f) * -1f) + .5f, fieldWidthValue * -1f);
     }
 
 
@@ -94,10 +93,5 @@ public class GameManager : MonoBehaviour {
         foreach (GameObject tempC in go) {
             playerControllers.Add (tempC.GetComponent<UIManager> ().c);
         }
-    }
-
-
-    public void EndGame () {
-
     }
 }

@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 
+
 public class Controller {
 
-	public KeyCode keyLeft;
-	public KeyCode keyRight;
-	public KeyCode keyDown;
-	public KeyCode keyRotate;
+
+	public KeyCode keyLeft, keyRight, keyDown, keyRotate;
+
 
 	public Controller (KeyCode l, KeyCode r, KeyCode d, KeyCode t) {
 		keyLeft = l;

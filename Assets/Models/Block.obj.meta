@@ -1,14 +1,16 @@
 fileFormatVersion: 2
 guid: df3249cd2a6cb6a41bdeb2d84c014dab
 ModelImporter:
-  serializedVersion: 22
+  serializedVersion: 23
   fileIDToRecycleName:
     100000: //RootNode
     100002: default
     100004: cube_root
+    100006: Block_root
     400000: //RootNode
     400002: default
     400004: cube_root
+    400006: Block_root
     2100000: defaultMat
     2300000: default
     3300000: default
@@ -65,6 +67,8 @@ ModelImporter:
     secondaryUVHardAngle: 88
     secondaryUVPackMargin: 4
     useFileScale: 1
+    previousCalculatedGlobalScale: 1
+    hasPreviousCalculatedGlobalScale: 0
   tangentSpace:
     normalSmoothAngle: 30
     normalImportMode: 1

@@ -19,8 +19,9 @@ public class UIManager : MonoBehaviour {
     public void AddOne (int max = 99) {
         int a;
         Int32.TryParse (GetComponent<Text> ().text, out a);
-        if (a < max)
-            a += 1;
+
+        if (a < max) a += 1;
+
         GetComponent<Text> ().text = a.ToString ();
     }
 
@@ -28,8 +29,9 @@ public class UIManager : MonoBehaviour {
     public void RemoveOne (int min = 1) {
         int r;
         Int32.TryParse (GetComponent<Text> ().text, out r);
-        if (r > min)
-            r -= 1;
+
+        if (r > min) r -= 1;
+
         GetComponent<Text> ().text = r.ToString ();
     }
 
@@ -37,17 +39,20 @@ public class UIManager : MonoBehaviour {
     //This is the functionality for adding/removing players
     //#####################################################################################################################################
     public void AddPlayerControl (GameObject playerControl) {
+
         if (pC.Count + 1 < _max) {
             GameObject c = Instantiate (playerControl);
             c.name = "Controls" + (pC.Count + 1).ToString ();
             c.transform.SetParent (playerControl.transform.parent);
             c.GetComponent<RectTransform> ().localScale = new Vector3 (1, 1, 1);
+            c.transform.GetChild (0).GetComponentInChildren<Text> ().text = "Player " + (pC.Count + 2).ToString ();
             pC.Add (c);
         }
     }
 
 
     public void RemovePlayerControl () {
+
         if (pC.Count + 1 > _min) {
             Destroy (pC [pC.Count - 1]);
             pC.Remove (pC [pC.Count - 1]);
@@ -64,11 +69,11 @@ public class UIManager : MonoBehaviour {
 
     IEnumerator getKey (Text btnText) {
         string k = btnText.text;
-        // btnText.text = "";
 
         yield return new WaitUntil (() => Input.anyKeyDown == true);
 
         foreach (KeyCode vKey in System.Enum.GetValues (typeof (KeyCode))) {
+
             if (Input.GetKey (vKey)) {
 
                 switch (btnText.name) {
