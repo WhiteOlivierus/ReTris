@@ -298,11 +298,6 @@ public class TileManager {
 
 
     private void GameOver () {
-        ResetGame ();
-    }
-
-
-    private void ResetGame () {
         Debug.Log ("Reset tilemanager " + id.ToString ());
 
         for (int i = 0; i < blocks.Length; i++) {
@@ -317,6 +312,8 @@ public class TileManager {
         tiles.TrimExcess ();
         timePassed = 0f;
         playerTile = null;
+
+        GameObject.Find ("GameManager").GetComponent<GameManager> ().GameOver ();
     }
 
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -23,6 +24,8 @@ public class GameManager : MonoBehaviour {
     private bool gameStarted = false;
 
     private Vector3 newCamPosition;
+
+    private int playersGameOver = 0;
 
 
     void Awake () {
@@ -93,5 +96,21 @@ public class GameManager : MonoBehaviour {
         foreach (GameObject tempC in go) {
             playerControllers.Add (tempC.GetComponent<UIManager> ().c);
         }
+    }
+
+
+    public void GameOver () {
+        playersGameOver++;
+
+        if (playersGameOver >= playerCountValue) {
+            Camera.main.transform.GetChild (0).GetComponent<MeshRenderer> ().enabled = true;
+            StartCoroutine ("toMain");
+        }
+    }
+
+
+    IEnumerator toMain () {
+        yield return new WaitForSeconds (2f);
+        SceneManager.LoadScene (0);
     }
 }
