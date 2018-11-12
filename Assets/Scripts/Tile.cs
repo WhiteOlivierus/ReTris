@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-
+//Made by Daniel Bergshoeff
 public enum SpecialEffect {
     DROPFASTER,
     RANDOMTILE,

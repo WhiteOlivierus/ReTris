@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-
+//Made by Bas Dijkstra
 public class UIManager : MonoBehaviour {
 
 

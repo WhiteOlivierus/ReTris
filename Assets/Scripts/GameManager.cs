@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-
+//Made by Bas Dijkstra
 public class GameManager : MonoBehaviour {
 
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-
+//Made by Daniel Bergshoeff
 public class SpecialEffectEvent : UnityEvent<SpecialEffect, int> { }
 
 

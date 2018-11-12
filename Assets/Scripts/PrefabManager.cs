@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
+//Made by Daniel Bergshoeff
 public class PrefabManager : MonoBehaviour {
 
 
